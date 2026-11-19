@@ -16,6 +16,8 @@ import com.example.obdapp.R
 import com.example.obdapp.ble.BleObdTransport
 import com.example.obdapp.data.ObdDatabase
 import com.example.obdapp.obd.DtcKind
+import com.example.obdapp.obd.FreezeFrame
+import com.example.obdapp.obd.Mode06Record
 import com.example.obdapp.obd.ObdManager
 import com.example.obdapp.obd.PidCatalog
 import com.example.obdapp.obd.PidDef
@@ -285,6 +287,16 @@ class ObdBleService : Service() {
         val m = manager ?: throw IOException("Not connected")
         m.clearDtcs()
         db.logDtcEvent("CLEAR", emptyList())
+    }
+
+    suspend fun readFreezeFrame(): FreezeFrame = withContext(Dispatchers.IO) {
+        val m = manager ?: throw IOException("Not connected")
+        m.readFreezeFrame()
+    }
+
+    suspend fun readMode06(): List<Mode06Record> = withContext(Dispatchers.IO) {
+        val m = manager ?: throw IOException("Not connected")
+        m.readMode06()
     }
 
     suspend fun refreshVehicleInfo(): Map<String, String> = withContext(Dispatchers.IO) {

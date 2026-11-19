@@ -1,4 +1,4 @@
-# Mazda OBD — Phase 1
+# Mazda OBD — Phase 2
 
 Personal OBD-II app for a **Mazda 3 (BL) 2010**, targeting **Android 15 (API 35)**,
 talking to a **BLE ELM327** adapter with protocol auto-detect.
@@ -7,6 +7,11 @@ Phase 1 scope (per the original plan): live data + charts, DTC read/clear,
 vehicle info, SQLite history. **No maps, no notifications feature** (the ongoing
 "adapter connection" notification is an Android system requirement for the
 foreground service, not an app feature).
+
+Phase 2 adds, inside the existing **DTC tab** (no new navigation item):
+freeze-frame snapshots (**Mode 02**), on-board monitoring test results
+(**Mode 06**), and the full **Mazda P1xxx** DTC description table. These are
+read-only and session-only — nothing new is persisted to SQLite.
 
 ## Stack
 
@@ -67,12 +72,16 @@ ui/ObdViewModel (activity-scoped, mirrors service flows)
 Command line: `./gradlew assembleDebug` (requires Android SDK; set `sdk.dir`
 in `local.properties` or `ANDROID_HOME`).
 
-## Known Phase 1 limitations / next steps
+## Known limitations / next steps
 
 - Chart shows one PID at a time (dropdown); grid shows the polled set.
 - No trip model yet — `samples` is one continuous time series per PID.
-- DTC descriptions cover common generic P0 codes; Mazda P1xxx fall back to
-  "manufacturer-specific" (Phase 2: full Mazda code table).
-- Freeze-frame (Mode 02), Mode 06 monitor results, and CSV export are Phase 2.
+- DTC descriptions cover common generic P0 codes plus the full Mazda P1xxx
+  table (`DtcDescriptions.mazdaMap`); anything else falls back to a
+  prefix-based label.
+- Freeze-frame (Mode 02) and Mode 06 monitor results are read-only and
+  session-only (shown in the DTC tab; not persisted). Mode 06 decoding
+  supports the SAE J1979 Unit-and-Scaling table; unknown UAS IDs show raw hex.
+- CSV export is still pending.
 - If your dongle uses a different GATT layout, add its UUIDs to
   `BleObdTransport.UART_SPECS`.

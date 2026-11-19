@@ -3,7 +3,9 @@ package com.example.obdapp.obd
 import com.github.eltonvs.obd.command.AdaptiveTimingMode
 import com.github.eltonvs.obd.command.BadResponseException
 import com.github.eltonvs.obd.command.NoDataException
+import com.github.eltonvs.obd.command.ObdCommand
 import com.github.eltonvs.obd.command.ObdProtocols
+import com.github.eltonvs.obd.command.ObdRawResponse
 import com.github.eltonvs.obd.command.Switcher
 import com.github.eltonvs.obd.command.at.AdapterVoltageCommand
 import com.github.eltonvs.obd.command.at.DescribeProtocolCommand
@@ -29,6 +31,10 @@ import java.io.InputStream
 import java.io.OutputStream
 
 enum class DtcKind { STORED, PENDING, PERMANENT }
+
+/** Mode 02 freeze-frame snapshot: the DTC that stored it plus the captured PIDs. */
+data class FreezeFrame(val dtc: String?, val samples: List<PidSample>)
+
 
 /**
  * Wraps kotlin-obd-api's ObdDeviceConnection with the app's session logic:
@@ -147,4 +153,147 @@ class ObdManager(inputStream: InputStream, outputStream: OutputStream) {
     suspend fun clearDtcs() {
         connection.run(ResetTroubleCodesCommand(), maxRetries = 10)
     }
+
+    // ---- Mode 02: freeze frame ----
+
+    /**
+     * Reads the freeze-frame (Mode 02) snapshot stored with the first fault.
+     * Returns an empty snapshot when the ECU reports no stored frame.
+     */
+    suspend fun readFreezeFrame(): FreezeFrame {
+        val dtc = readFreezeFrameDtc()
+        val samples = ArrayList<PidSample>()
+        for (pid in FREEZE_FRAME_PIDS) {
+            val def = PidCatalog.get(pid.key) ?: continue
+            val data = readMode02Data(pid.key) ?: continue
+            if (data.isEmpty()) continue
+            val bytes = data.copyOf(pid.bytes)
+            val command = def.commandFactory()
+            val display = runCatching { command.handler(syntheticMode01(pid.key, bytes)) }
+                .getOrNull() ?: continue
+            samples.add(
+                PidSample(
+                    pidKey = def.key,
+                    label = def.label,
+                    value = null,
+                    display = display,
+                    unit = command.defaultUnit.ifBlank { def.unit }
+                )
+            )
+        }
+        return FreezeFrame(dtc, samples)
+    }
+
+    /** Mode 02 PID 02 returns the two bytes of the DTC that triggered the freeze frame. */
+    private suspend fun readFreezeFrameDtc(): String? {
+        val data = readMode02Data("02") ?: return null
+        if (data.size < 2) return null
+        val code = encodeDtc(data[0], data[1])
+        return if (code == "P0000") null else code
+    }
+
+    /** Raw Mode 02 data bytes for one PID (frame 0), or null when the ECU has no value. */
+    private suspend fun readMode02Data(pid: String): IntArray? {
+        val response = try {
+            connection.run(FreezeFrameCommand(pid), maxRetries = 2)
+        } catch (e: BadResponseException) {
+            return null
+        }
+        // bytes = [0x42, PID, frame #, data…]
+        val bytes = response.rawResponse.bufferedValue
+        if (bytes.size < 3) return null
+        return bytes.copyOfRange(3, bytes.size)
+    }
+
+    /**
+     * Re-labels a Mode 02 payload as a Mode 01 payload so the existing PID decoders
+     * (which expect `41 <PID> <data>` starting at index 2) can be reused unchanged.
+     */
+    private fun syntheticMode01(pid: String, data: IntArray): ObdRawResponse {
+        val hex = buildString(data.size * 2 + 4) {
+            append("41").append(pid)
+            for (b in data) append("%02X".format(b and 0xFF))
+        }
+        return ObdRawResponse(hex, 0L)
+    }
+
+    // ---- Mode 06: on-board monitoring test results ----
+
+    /** Reads supported on-board monitors and their test results (Mode 06). */
+    suspend fun readMode06(): List<Mode06Record> {
+        val mids = discoverMode06Mids().ifEmpty { MODE06_FALLBACK_MIDS }
+        val records = ArrayList<Mode06Record>()
+        for (mid in mids.take(MAX_MODE06_MIDS)) {
+            val response = try {
+                connection.run(Mode06Command(mid), maxRetries = 2)
+            } catch (e: BadResponseException) {
+                continue
+            }
+            records.addAll(Mode06.parse(response.rawResponse.bufferedValue))
+        }
+        return records
+    }
+
+    /** Walks the Mode 06 supported-MID bitmaps (00, 20, 40 …). */
+    private suspend fun discoverMode06Mids(): List<Int> {
+        val found = sortedSetOf<Int>()
+        for (base in MODE06_MID_BASES) {
+            val response = try {
+                connection.run(Mode06Command(base), maxRetries = 2)
+            } catch (e: BadResponseException) {
+                break
+            }
+            val bytes = response.rawResponse.bufferedValue
+            // bytes = [0x46, MID, b0, b1, b2, b3]
+            if (bytes.size < 6 || bytes[1] != base) break
+            for (bit in 0 until 32) {
+                if ((bytes[2 + bit / 8] and (0x80 shr (bit % 8))) != 0) found.add(base + bit + 1)
+            }
+            if ((bytes[5] and 0x01) == 0) break
+        }
+        return found.toList()
+    }
+
+    private class FreezeFrameCommand(private val framePid: String) : ObdCommand() {
+        override val tag = "MODE02_PID_$framePid"
+        override val name = "Freeze frame PID $framePid"
+        override val mode = "02"
+        override val pid = "$framePid 00"
+    }
+
+    private class Mode06Command(mid: Int) : ObdCommand() {
+        override val tag = "MODE06_MID_${"%02X".format(mid)}"
+        override val name = "Monitor test MID ${"%02X".format(mid)}"
+        override val mode = "06"
+        override val pid = "%02X".format(mid)
+    }
+
+    private companion object {
+        /** (Mode 02 PID, byte length) pairs, ordered for display. */
+        val FREEZE_FRAME_PIDS = listOf(
+            FfPid("04", 1), FfPid("05", 1), FfPid("06", 1), FfPid("08", 1),
+            FfPid("0B", 1), FfPid("0C", 2), FfPid("0D", 1), FfPid("0E", 1),
+            FfPid("0F", 1), FfPid("10", 2), FfPid("11", 1), FfPid("1F", 2),
+            FfPid("2F", 1), FfPid("33", 1), FfPid("42", 2), FfPid("43", 2),
+            FfPid("45", 1), FfPid("46", 1), FfPid("5C", 1)
+        )
+
+        val MODE06_MID_BASES = listOf(0x00, 0x20, 0x40, 0x60, 0x80, 0xA0)
+
+        /** Queried only when the ECU does not answer the supported-MID bitmaps. */
+        val MODE06_FALLBACK_MIDS = listOf(0x01, 0x02, 0x21, 0x31, 0x39, 0x41, 0xA1)
+
+        const val MAX_MODE06_MIDS = 40
+    }
+}
+
+/** One freeze-frame PID to attempt, with the number of data bytes the decoder needs. */
+private data class FfPid(val key: String, val bytes: Int)
+
+/** Encodes the two DTC bytes returned by Mode 02 PID 02 into "Pxxxx" form. */
+private fun encodeDtc(b0: Int, b1: Int): String {
+    val letter = "PCBU"[(b0 shr 6) and 0x3]
+    val d1 = (b0 shr 4) and 0x3
+    val rest = "%X%X%X".format(b0 and 0xF, (b1 shr 4) and 0xF, b1 and 0xF)
+    return "$letter$d1$rest"
 }

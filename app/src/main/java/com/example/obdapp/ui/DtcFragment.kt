@@ -23,6 +23,7 @@ class DtcFragment : Fragment() {
     private val binding get() = _binding!!
     private val vm: ObdViewModel by activityViewModels()
     private val adapter = DtcAdapter()
+    private val kvAdapter = KeyValueAdapter()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentDtcBinding.inflate(inflater, container, false)
@@ -36,6 +37,8 @@ class DtcFragment : Fragment() {
 
         binding.btnReadStored.setOnClickListener { vm.readDtcs(DtcKind.STORED) }
         binding.btnReadPending.setOnClickListener { vm.readDtcs(DtcKind.PENDING) }
+        binding.btnFreezeFrame.setOnClickListener { vm.readFreezeFrame() }
+        binding.btnMode06.setOnClickListener { vm.readMode06() }
         binding.btnClear.setOnClickListener { confirmClear() }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -76,10 +79,17 @@ class DtcFragment : Fragment() {
                 } else {
                     getString(R.string.dtc_found, state.codes.size, kindLabel)
                 }
+                binding.recyclerCodes.adapter = adapter
                 adapter.submit(state.codes)
+            }
+            is ObdViewModel.DtcUiState.Detail -> {
+                binding.txtDtcStatus.text = state.status
+                binding.recyclerCodes.adapter = kvAdapter
+                kvAdapter.submitRows(state.rows)
             }
             is ObdViewModel.DtcUiState.Cleared -> {
                 binding.txtDtcStatus.text = state.message
+                binding.recyclerCodes.adapter = adapter
                 adapter.submit(emptyList())
             }
             is ObdViewModel.DtcUiState.Error ->
@@ -90,6 +100,8 @@ class DtcFragment : Fragment() {
     private fun setButtons(enabled: Boolean) {
         binding.btnReadStored.isEnabled = enabled
         binding.btnReadPending.isEnabled = enabled
+        binding.btnFreezeFrame.isEnabled = enabled
+        binding.btnMode06.isEnabled = enabled
         binding.btnClear.isEnabled = enabled
     }
 

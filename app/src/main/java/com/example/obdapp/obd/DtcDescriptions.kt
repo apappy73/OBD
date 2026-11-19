@@ -1,13 +1,15 @@
 package com.example.obdapp.obd
 
 /**
- * Descriptions for common generic (P0xxx) trouble codes, biased toward
- * codes frequently seen on MZR LF/L5 engines of the Mazda 3 BL.
- * Manufacturer-specific codes (P1xxx for Mazda) fall back to a generic label.
+ * Descriptions for trouble codes.
+ *
+ * [genericMap] covers common generic (P0xxx) codes, biased toward codes
+ * frequently seen on MZR LF/L5 engines of the Mazda 3 BL.
+ * [mazdaMap] holds the manufacturer-specific P1xxx table for Mazda.
  */
 object DtcDescriptions {
 
-    private val map = mapOf(
+    private val genericMap = mapOf(
         "P0010" to "Camshaft position actuator circuit (Bank 1 intake)",
         "P0011" to "Camshaft position - timing over-advanced (Bank 1 intake)",
         "P0012" to "Camshaft position - timing over-retarded (Bank 1 intake)",
@@ -86,14 +88,189 @@ object DtcDescriptions {
         "P2196" to "O2 sensor signal stuck rich (Bank 1 Sensor 1)"
     )
 
+    /** Mazda-specific powertrain codes (P1000-P1901). */
+    private val mazdaMap = mapOf(
+        "P1000" to "OBD II monitor testing not completed",
+        "P1001" to "Unable to achieve self-test function or SCP error",
+        "P1100" to "Mass airflow sensor circuit intermittent",
+        "P1101" to "Mass airflow sensor circuit out of self-test range",
+        "P1102" to "Mass airflow sensor signal inconsistent with throttle position sensor",
+        "P1103" to "Mass airflow sensor signal inconsistent with engine speed",
+        "P1110" to "Intake air temperature sensor signal (dynamic chamber) circuit",
+        "P1112" to "Intake air temperature sensor circuit intermittent",
+        "P1113" to "Intake air temperature sensor signal (dynamic chamber) circuit",
+        "P1114" to "Intake air temperature sensor circuit low input",
+        "P1116" to "ECT sensor circuit out of self-test range",
+        "P1117" to "ECT sensor signal intermittent",
+        "P1120" to "Throttle position sensor out of range low",
+        "P1121" to "Throttle position sensor signal not consistent with mass airflow signal",
+        "P1122" to "Throttle position stuck closed",
+        "P1123" to "Throttle position stuck open",
+        "P1124" to "Throttle position sensor signal out of self-test range",
+        "P1125" to "Throttle position sensor signal intermittent",
+        "P1127" to "HO2S Bank 1 Sensor 2 heater not on during key-on engine-running self-test",
+        "P1128" to "HO2S Bank 1 Sensor 1 signals swapped in key-on engine-running self-test",
+        "P1130" to "HO2S Bank 1 Sensor 1 not switching (fuel control limit reached)",
+        "P1131" to "HO2S Bank 1 Sensor 1 signal below 0.45V (A/F ratio too lean)",
+        "P1132" to "HO2S Bank 1 Sensor 1 signal above 0.45V (A/F ratio too rich)",
+        "P1135" to "HO2S Bank 1 Sensor 1 heater circuit low input",
+        "P1136" to "HO2S Bank 1 Sensor 1 heater circuit high input",
+        "P1137" to "HO2S Bank 1 Sensor 2 not switching (fuel control limit reached)",
+        "P1138" to "HO2S Bank 1 Sensor 2 signal above 0.45V (A/F ratio too rich)",
+        "P1141" to "HO2S Bank 1 Sensor 2 heater circuit low input",
+        "P1142" to "HO2S Bank 1 Sensor 2 heater circuit high input",
+        "P1143" to "HO2S Bank 1 Sensor 3 signal below 0.45V (A/F ratio too lean)",
+        "P1144" to "HO2S Bank 1 Sensor 3 signal above 0.45V (A/F ratio too rich)",
+        "P1150" to "HO2S Bank 2 Sensor 1 not switching (fuel control limit reached)",
+        "P1151" to "HO2S Bank 2 Sensor 1 signal below 0.45V (A/F ratio too lean)",
+        "P1152" to "HO2S Bank 2 Sensor 1 signal above 0.45V (A/F ratio too rich)",
+        "P1169" to "HO2S Bank 1 Sensor 1 circuit fixed",
+        "P1170" to "HO2S Bank 1 Sensor 1 circuit fixed",
+        "P1173" to "HO2S Bank 2 Sensor 1 circuit fixed",
+        "P1195" to "EGR boost sensor circuit",
+        "P1196" to "Ignition switch start circuit",
+        "P1235" to "Fuel pump control circuit",
+        "P1236" to "Fuel pump control out of range",
+        "P1250" to "Pressure regulator control solenoid circuit",
+        "P1252" to "Pressure regulator control solenoid '2' circuit",
+        "P1260" to "Anti-theft system signal detected - engine disabled",
+        "P1270" to "Engine RPM or vehicle speed limit reached",
+        "P1309" to "Misfire detection monitor",
+        "P1345" to "No CMP or SGC signal",
+        "P1351" to "Ignition diagnostic monitor signal lost to PCM or out of range",
+        "P1352" to "Ignition coil 'A' primary circuit",
+        "P1353" to "Ignition coil 'B' primary circuit",
+        "P1354" to "Ignition coil 'C' primary circuit",
+        "P1358" to "Ignition diagnostic monitor signal out of self-test range",
+        "P1359" to "SPOUT signal lost to powertrain control module or out of range",
+        "P1360" to "Ignition coil 'A' secondary circuit",
+        "P1361" to "Ignition coil 'B' secondary circuit",
+        "P1362" to "Ignition coil 'C' secondary circuit",
+        "P1364" to "Ignition coil primary circuit",
+        "P1365" to "Ignition coil secondary circuit",
+        "P1390" to "Octane adjust shorting bar out or circuit open",
+        "P1400" to "DPFE sensor circuit low input",
+        "P1401" to "DPFE sensor circuit high input",
+        "P1402" to "EGR valve position sensor circuit",
+        "P1405" to "DPFE sensor upstream hose off or plugged",
+        "P1406" to "DPFE sensor downstream hose off or plugged",
+        "P1407" to "No EGR flow detected",
+        "P1408" to "EGR system flow out of key-on engine-running self-test range",
+        "P1409" to "EGR vacuum regulator solenoid circuit",
+        "P1410" to "EGR boost solenoid valve stuck",
+        "P1443" to "EVAP system purge flow fault",
+        "P1444" to "EVAP purge flow sensor circuit low voltage",
+        "P1446" to "EVAP purge flow sensor circuit high voltage",
+        "P1449" to "CDCV or throttle position CV circuit",
+        "P1450" to "EVAP control system fault",
+        "P1451" to "Canister vent solenoid circuit",
+        "P1455" to "Fuel tank level sensor circuit",
+        "P1460" to "Wide open throttle A/C cut-off relay circuit",
+        "P1464" to "Air conditioning control signal circuit",
+        "P1474" to "Fan control (primary winding) circuit",
+        "P1479" to "Fan control (condenser primary) circuit",
+        "P1485" to "EGR vacuum solenoid circuit",
+        "P1486" to "EGR vent solenoid circuit",
+        "P1487" to "EGR-CHK (boost) solenoid circuit",
+        "P1496" to "EGR valve motor coil '1' open or shorted",
+        "P1497" to "EGR valve motor coil '2' open or shorted",
+        "P1498" to "EGR valve motor coil '3' open or shorted",
+        "P1499" to "EGR valve motor coil '4' open or shorted",
+        "P1500" to "Vehicle speed sensor intermittent signal",
+        "P1501" to "Vehicle speed sensor out of self-test range",
+        "P1502" to "Vehicle speed sensor circuit error",
+        "P1504" to "Idle air control solenoid circuit intermittent",
+        "P1505" to "Idle air control system at adaptive clip",
+        "P1506" to "Idle air control system overspeed detected",
+        "P1507" to "Idle air control system underspeed detected",
+        "P1508" to "Bypass air solenoid '1' circuit",
+        "P1509" to "Bypass air solenoid '2' circuit",
+        "P1512" to "VTCS fault",
+        "P1521" to "VRIS solenoid '1' circuit",
+        "P1522" to "VRIS solenoid '2' circuit",
+        "P1523" to "VICS solenoid circuit",
+        "P1524" to "Charge air cooler bypass solenoid circuit",
+        "P1525" to "ABV vacuum solenoid circuit",
+        "P1526" to "ABV vent solenoid circuit",
+        "P1529" to "L/C atmospheric balance air control valve circuit",
+        "P1540" to "ABV system fault",
+        "P1562" to "Powertrain control module +BB voltage low",
+        "P1569" to "VTCS circuit low input",
+        "P1570" to "VTCS circuit high input",
+        "P1601" to "Powertrain control module communication line to TCM error",
+        "P1602" to "Immobilizer system communication error with powertrain control module",
+        "P1603" to "Immobilizer system fault",
+        "P1604" to "Immobilizer system fault",
+        "P1605" to "Powertrain control module keep-alive memory test error",
+        "P1608" to "Powertrain control module (ECM CPU) DTC test fault",
+        "P1609" to "Powertrain control module (ECM CPU) knock sensor circuit",
+        "P1621" to "Immobilizer system fault",
+        "P1622" to "Immobilizer system fault",
+        "P1623" to "Immobilizer system fault",
+        "P1624" to "Immobilizer system fault",
+        "P1627" to "Powertrain control module (ECM/TCS) line communication error",
+        "P1628" to "Powertrain control module (ECM/TCS) any line communication error",
+        "P1631" to "Generator output voltage signal (no output)",
+        "P1632" to "Battery voltage monitor circuit",
+        "P1633" to "Battery overcharge fault",
+        "P1634" to "Generator terminal 'B' circuit open",
+        "P1650" to "Power steering pressure switch out of range fault",
+        "P1651" to "Power steering pressure switch circuit",
+        "P1652" to "Power steering pressure switch circuit",
+        "P1701" to "Transmission range sensor reverse engagement error",
+        "P1702" to "Transmission range sensor circuit intermittent",
+        "P1703" to "Brake on/off switch out of self-test range",
+        "P1705" to "Transmission range sensor out of self-test range",
+        "P1709" to "Clutch pedal position switch circuit",
+        "P1711" to "Transmission fluid temperature sensor circuit out of self-test range",
+        "P1713" to "Transmission fluid temperature sensor circuit",
+        "P1714" to "Shift solenoid '1' mechanical fault",
+        "P1715" to "Shift solenoid '2' mechanical fault",
+        "P1716" to "Shift solenoid '3' mechanical fault",
+        "P1717" to "Shift solenoid '4' mechanical fault",
+        "P1718" to "Transmission fluid temperature sensor circuit",
+        "P1720" to "Vehicle speed sensor '2' signal error",
+        "P1729" to "Transmission 4x4 low switch error",
+        "P1740" to "Torque converter clutch solenoid mechanical fault",
+        "P1741" to "Torque converter clutch control electrical fault",
+        "P1742" to "Torque converter clutch solenoid shorted",
+        "P1743" to "Torque converter clutch failed on - TCIL is on",
+        "P1744" to "Torque converter clutch solenoid mechanical fault",
+        "P1746" to "Electronic pressure control solenoid circuit open",
+        "P1747" to "Electronic pressure control solenoid circuit",
+        "P1749" to "Electronic pressure control solenoid circuit low",
+        "P1751" to "Transmission shift solenoid 'A' mechanical fault",
+        "P1752" to "Transmission shift solenoid 'A' circuit shorted",
+        "P1754" to "Transmission coast clutch solenoid electrical fault",
+        "P1756" to "Transmission shift solenoid 'B' mechanical fault",
+        "P1757" to "Transmission shift solenoid 'B' circuit shorted",
+        "P1761" to "Transmission shift solenoid '3' mechanical fault",
+        "P1762" to "Transmission SS3/SS4/OD band fault",
+        "P1765" to "Transmission 3-2 timing solenoid valve",
+        "P1767" to "Torque converter clutch solenoid circuit",
+        "P1771" to "Throttle position sensor circuit open to transmission control module",
+        "P1772" to "Throttle position sensor circuit shorted to transmission control module",
+        "P1780" to "Transmission control switch circuit",
+        "P1781" to "Transmission 4x4 low switch out of range fault",
+        "P1783" to "Transmission fluid temperature high input",
+        "P1788" to "3-2T/CCS circuit open",
+        "P1789" to "3-2T/CCS circuit shorted",
+        "P1794" to "Powertrain control module battery direct power circuit",
+        "P1797" to "P/N switch open or short circuit",
+        "P1900" to "Turbine speed sensor circuit intermittent",
+        "P1901" to "Torque converter clutch circuit intermittent"
+    )
+
     fun describe(code: String): String {
-        map[code]?.let { return it }
+        val key = code.trim().uppercase()
+        genericMap[key]?.let { return it }
+        mazdaMap[key]?.let { return it }
         return when {
-            code.startsWith("P1") -> "Manufacturer-specific powertrain code (Mazda) — check service manual"
-            code.startsWith("P2") || code.startsWith("P3") -> "Generic powertrain code — check service manual"
-            code.startsWith("C") -> "Chassis code (ABS/DSC etc.)"
-            code.startsWith("B") -> "Body code"
-            code.startsWith("U") -> "Network/communication code"
+            key.startsWith("P1") -> "Manufacturer-specific powertrain code (Mazda) — check service manual"
+            key.startsWith("P2") || key.startsWith("P3") -> "Generic powertrain code — check service manual"
+            key.startsWith("C") -> "Chassis code (ABS/DSC etc.)"
+            key.startsWith("B") -> "Body code"
+            key.startsWith("U") -> "Network/communication code"
             else -> "Unknown code"
         }
     }

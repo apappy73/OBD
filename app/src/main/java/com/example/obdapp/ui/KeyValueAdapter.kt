@@ -10,7 +10,11 @@ class KeyValueAdapter : RecyclerView.Adapter<KeyValueAdapter.VH>() {
     private var entries: List<Pair<String, String>> = emptyList()
 
     fun submit(map: Map<String, String>) {
-        entries = map.entries.map { it.key to it.value }
+        submitRows(map.entries.map { it.key to it.value })
+    }
+
+    fun submitRows(rows: List<Pair<String, String>>) {
+        entries = rows
         notifyDataSetChanged()
     }
 

@@ -5,7 +5,9 @@ import android.content.Intent
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.obdapp.obd.DtcDescriptions
 import com.example.obdapp.obd.DtcKind
+import com.example.obdapp.obd.Mode06
 import com.example.obdapp.obd.PidDef
 import com.example.obdapp.obd.PidSample
 import com.example.obdapp.service.ObdBleService
@@ -28,6 +30,7 @@ class ObdViewModel(app: Application) : AndroidViewModel(app) {
         data object Idle : DtcUiState
         data object Loading : DtcUiState
         data class Result(val kind: DtcKind, val codes: List<String>) : DtcUiState
+        data class Detail(val status: String, val rows: List<Pair<String, String>>) : DtcUiState
         data class Cleared(val message: String) : DtcUiState
         data class Error(val message: String) : DtcUiState
     }
@@ -117,6 +120,59 @@ class ObdViewModel(app: Application) : AndroidViewModel(app) {
                 DtcUiState.Cleared("Codes cleared. Readiness monitors were reset.")
             } catch (e: Exception) {
                 DtcUiState.Error(e.message ?: "Failed to clear codes")
+            }
+        }
+    }
+
+    /** Mode 02: the PID snapshot the ECU captured when the first fault was stored. */
+    fun readFreezeFrame() {
+        val s = service ?: return
+        viewModelScope.launch {
+            _dtcState.value = DtcUiState.Loading
+            _dtcState.value = try {
+                val frame = s.readFreezeFrame()
+                if (frame.dtc == null && frame.samples.isEmpty()) {
+                    DtcUiState.Detail("No freeze-frame data stored (Mode 02).", emptyList())
+                } else {
+                    val rows = ArrayList<Pair<String, String>>()
+                    frame.dtc?.let {
+                        rows.add("Stored DTC" to it)
+                        rows.add("Description" to DtcDescriptions.describe(it))
+                    }
+                    frame.samples.forEach {
+                        val unit = if (it.unit.isBlank()) "" else " ${it.unit}"
+                        rows.add(it.label to "${it.display}$unit")
+                    }
+                    val head = frame.dtc?.let { "Freeze frame • $it" } ?: "Freeze frame"
+                    DtcUiState.Detail("$head • ${frame.samples.size} value(s)", rows)
+                }
+            } catch (e: Exception) {
+                DtcUiState.Error(e.message ?: "Failed to read freeze frame")
+            }
+        }
+    }
+
+    /** Mode 06: on-board monitoring test results with limits. */
+    fun readMode06() {
+        val s = service ?: return
+        viewModelScope.launch {
+            _dtcState.value = DtcUiState.Loading
+            _dtcState.value = try {
+                val records = s.readMode06()
+                if (records.isEmpty()) {
+                    DtcUiState.Detail("No Mode 06 monitor results reported by this ECU.", emptyList())
+                } else {
+                    val rows = records.map { r ->
+                        val key = "MID 0x%02X · TID 0x%02X".format(r.mid, r.tid)
+                        val value = "%s: %s  (range %s)".format(
+                            Mode06.midName(r.mid), r.valueText, r.limitText
+                        )
+                        key to value
+                    }
+                    DtcUiState.Detail("${records.size} monitor test result(s)", rows)
+                }
+            } catch (e: Exception) {
+                DtcUiState.Error(e.message ?: "Failed to read monitor tests")
             }
         }
     }

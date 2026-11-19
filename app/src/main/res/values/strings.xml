@@ -32,6 +32,8 @@
     <!-- DTC -->
     <string name="dtc_read_stored">Read stored</string>
     <string name="dtc_read_pending">Read pending</string>
+    <string name="dtc_freeze_frame">Freeze frame</string>
+    <string name="dtc_mode06">Monitor tests</string>
     <string name="dtc_clear">Clear codes / reset MIL</string>
     <string name="dtc_clear_title">Clear trouble codes?</string>
     <string name="dtc_clear_message">This erases stored and pending codes, turns off the check-engine light and resets emissions readiness monitors. Monitors must re-run before an emissions test. Only do this after noting the codes.</string>
