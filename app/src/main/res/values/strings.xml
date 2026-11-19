@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mazda OBD</string>
+
+    <!-- Connection -->
+    <string name="action_connect">Connect</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_refresh">Refresh</string>
+    <string name="action_manual_address">Enter address manually</string>
+    <string name="status_disconnected">Disconnected</string>
+    <string name="status_connecting">Connecting to %1$s…</string>
+    <string name="status_initializing">Initializing ELM327 / auto-detecting protocol…</string>
+    <string name="status_connected">%1$s • %2$s</string>
+    <string name="status_failed">Failed: %1$s</string>
+    <string name="scan_title">Select BLE adapter</string>
+    <string name="permissions_required">Bluetooth permissions are required to scan and connect</string>
+    <string name="bluetooth_off">Turn on Bluetooth first</string>
+    <string name="invalid_address">Invalid MAC address format</string>
+
+    <!-- Tabs -->
+    <string name="tab_live">Live data</string>
+    <string name="tab_dtc">Codes</string>
+    <string name="tab_info">Vehicle</string>
+
+    <!-- Live data -->
+    <string name="record">Record</string>
+    <string name="placeholder_value">—</string>
+    <string name="chart_no_data">Connect to the adapter to see live data</string>
+    <string name="live_not_connected">Not connected. Tap Connect to find your ELM327 adapter.</string>
+
+    <!-- DTC -->
+    <string name="dtc_read_stored">Read stored</string>
+    <string name="dtc_read_pending">Read pending</string>
+    <string name="dtc_clear">Clear codes / reset MIL</string>
+    <string name="dtc_clear_title">Clear trouble codes?</string>
+    <string name="dtc_clear_message">This erases stored and pending codes, turns off the check-engine light and resets emissions readiness monitors. Monitors must re-run before an emissions test. Only do this after noting the codes.</string>
+    <string name="dtc_clear_confirm">Clear</string>
+    <string name="dtc_idle">Read stored or pending codes from the ECU.</string>
+    <string name="dtc_working">Working…</string>
+    <string name="dtc_not_connected">Connect to the adapter to read codes.</string>
+    <string name="dtc_none">No %1$s codes 🎉</string>
+    <string name="dtc_found">%1$d %2$s code(s)</string>
+    <string name="dtc_error">Error: %1$s</string>
+    <string name="dtc_kind_stored">stored</string>
+    <string name="dtc_kind_pending">pending</string>
+    <string name="dtc_kind_permanent">permanent</string>
+
+    <!-- Vehicle info -->
+    <string name="vehicle_card_title">Mazda 3 (BL) • 2010</string>
+    <string name="vehicle_card_body">Expected OBD protocol: ISO 15765-4 CAN (11-bit, 500 kbaud) — the app auto-detects via ATSP0.\n\nEngines: 2.0 MZR LF-VE / 2.5 MZR L5-VE (Mazdaspeed3: 2.3 DISI Turbo L3-VDT).\n\nOBD-II port: driver side, under the dash near the hood release.</string>
+    <string name="vehicle_read_title">Read from vehicle</string>
+
+    <!-- Service notification (system-required ongoing notification, not a feature) -->
+    <string name="channel_connection">Adapter connection</string>
+    <string name="channel_connection_desc">Keeps the Bluetooth link to the OBD adapter alive</string>
+    <string name="notif_connecting">Connecting to adapter…</string>
+    <string name="notif_initializing">Initializing adapter…</string>
+    <string name="notif_connected">Connected • %1$s</string>
+    <string name="notif_reconnecting">Reconnecting (attempt %1$d)…</string>
+    <string name="notif_disconnected">Adapter disconnected</string>
+    <string name="notif_link_lost">Connection to adapter lost</string>
+</resources>

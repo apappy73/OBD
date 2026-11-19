@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Mazda "Soul Red" as the brand accent -->
+    <color name="soul_red">#A6192E</color>
+    <color name="soul_red_dark">#7A1223</color>
+    <color name="soul_red_light">#E86A7C</color>
+    <color name="ic_launcher_background">#1C1B1F</color>
+</resources>
