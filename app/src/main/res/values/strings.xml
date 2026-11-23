@@ -14,6 +14,8 @@
     <string name="status_connected">%1$s • %2$s</string>
     <string name="status_failed">Failed: %1$s</string>
     <string name="scan_title">Select BLE adapter</string>
+    <string name="scan_section_paired">Paired devices</string>
+    <string name="scan_section_nearby">Nearby devices</string>
     <string name="permissions_required">Bluetooth permissions are required to scan and connect</string>
     <string name="bluetooth_off">Turn on Bluetooth first</string>
     <string name="invalid_address">Invalid MAC address format</string>

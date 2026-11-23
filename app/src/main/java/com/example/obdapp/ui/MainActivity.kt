@@ -2,6 +2,7 @@ package com.example.obdapp.ui
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanResult
 import android.content.ComponentName
 import android.content.Context
@@ -12,9 +13,13 @@ import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
 import android.text.InputType
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import android.widget.ListView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,9 +53,10 @@ class MainActivity : AppCompatActivity() {
     private var activeFragment: Fragment = liveDataFragment
 
     private var scanDialog: AlertDialog? = null
-    private var scanAdapter: ArrayAdapter<String>? = null
+    private var scanAdapter: ScanAdapter? = null
     private val scanItems = ArrayList<String>()
     private val scanAddresses = LinkedHashMap<String, String>() // display -> address
+    private var discoverStart = 0 // index where the "Nearby devices" entries begin
 
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
@@ -170,8 +176,17 @@ class MainActivity : AppCompatActivity() {
     private fun showScanDialog() {
         scanItems.clear()
         scanAddresses.clear()
+        // Sectioned list: "Paired devices" first (a known dongle is easiest to spot
+        // here, and bonded devices often stop advertising), then "Nearby devices".
+        val paired = bondedDisplays()
+        if (paired.isNotEmpty()) {
+            scanItems.add(getString(R.string.scan_section_paired))
+            scanItems.addAll(paired)
+        }
+        scanItems.add(getString(R.string.scan_section_nearby))
+        discoverStart = scanItems.size
         val listView = ListView(this)
-        scanAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, scanItems)
+        scanAdapter = ScanAdapter(this, scanItems)
         listView.adapter = scanAdapter
 
         val dialog = MaterialAlertDialogBuilder(this)
@@ -206,17 +221,38 @@ class MainActivity : AppCompatActivity() {
         handler.postDelayed({ stopScan() }, SCAN_TIMEOUT_MS)
     }
 
+    /**
+     * Paired (bonded) devices as display strings, alphabetically. Their addresses
+     * are registered in [scanAddresses] so discovered duplicates are skipped.
+     */
+    @SuppressLint("MissingPermission")
+    private fun bondedDisplays(): List<String> {
+        val adapter = getSystemService(BluetoothManager::class.java)?.adapter ?: return emptyList()
+        return adapter.bondedDevices.orEmpty()
+            .sortedBy { it.name?.lowercase() ?: "\uFFFF" }
+            .mapNotNull { d ->
+                val address = d.address ?: return@mapNotNull null
+                if (scanAddresses.containsValue(address)) return@mapNotNull null
+                val display = "${d.name ?: d.alias ?: "Unknown"} ($address)"
+                scanAddresses[display] = address
+                display
+            }
+    }
+
     @SuppressLint("MissingPermission")
     private fun addScanResult(result: ScanResult) {
         val address = result.device.address
         if (scanAddresses.containsValue(address)) return
-        val name = result.device.name ?: result.scanRecord?.deviceName ?: "Unknown"
+        // device.name is the friendly (possibly user-renamed) name; fall back to the
+        // advertisement name and the local alias before giving up.
+        val name = result.device.name ?: result.scanRecord?.deviceName
+            ?: result.device.alias ?: "Unknown"
         val display = "$name ($address)"
         scanAddresses[display] = address
-        // Likely OBD adapters first.
+        // Likely OBD adapters sorted up, but never above the "Nearby" section start.
         val looksLikeObd = OBD_NAME_HINTS.any { name.contains(it, ignoreCase = true) }
         if (looksLikeObd) {
-            var insertAt = 0
+            var insertAt = discoverStart
             while (insertAt < scanItems.size &&
                 OBD_NAME_HINTS.any { scanItems[insertAt].contains(it, ignoreCase = true) }
             ) insertAt++
@@ -254,8 +290,36 @@ class MainActivity : AppCompatActivity() {
 
     private fun toast(msg: String) = Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
 
+    /**
+     * Two row types: section headers (strings absent from [scanAddresses]) and
+     * device rows. Headers are non-clickable and styled by item_scan_header.
+     */
+    private inner class ScanAdapter(context: Context, items: MutableList<String>) :
+        ArrayAdapter<String>(context, android.R.layout.simple_list_item_1, items) {
+
+        override fun getViewTypeCount(): Int = 2
+
+        override fun getItemViewType(position: Int): Int =
+            if (getItem(position) in scanAddresses) VIEW_DEVICE else VIEW_HEADER
+
+        override fun isEnabled(position: Int): Boolean =
+            getItemViewType(position) == VIEW_DEVICE
+
+        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+            if (getItemViewType(position) != VIEW_HEADER) {
+                return super.getView(position, convertView, parent)
+            }
+            val view = convertView ?: LayoutInflater.from(context)
+                .inflate(R.layout.item_scan_header, parent, false)
+            (view as TextView).text = getItem(position)
+            return view
+        }
+    }
+
     companion object {
         private const val SCAN_TIMEOUT_MS = 12_000L
+        private const val VIEW_DEVICE = 0
+        private const val VIEW_HEADER = 1
         private val OBD_NAME_HINTS = listOf(
             "obd", "elm", "vlink", "veepeak", "konnwei", "vgate", "icar", "lelink", "v-link", "obdlink"
         )

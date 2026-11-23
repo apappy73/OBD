@@ -66,8 +66,10 @@ ui/ObdViewModel (activity-scoped, mirrors service flows)
 3. Run on a device with BLE, Android 12+ (developed for Android 15).
 4. Ignition ON (engine can be off), adapter seated in the OBD port
    (driver side, under the dash near the hood release).
-5. Tap **Connect** → pick your adapter (OBD-like names are sorted first;
-   "Enter address manually" works for dongles that don't advertise a name).
+5. Tap **Connect** → pick your adapter. The picker is sectioned: **Paired devices**
+   first (pair the dongle once in system Bluetooth settings and it's easy to find),
+   then **Nearby devices** (OBD-like names sorted to the top). "Enter address
+   manually" works for dongles that don't advertise a name.
 
 Command line: `./gradlew assembleDebug` (requires Android SDK; set `sdk.dir`
 in `local.properties` or `ANDROID_HOME`).
