@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mazda OBD — Main tabs mockup</title>
+<style>
+  :root{
+    /* Material 3 baseline light scheme with the app's overrides applied */
+    --primary:#A6192E;          /* colorPrimary  = soul_red        */
+    --secondary:#7A1223;        /* colorSecondary= soul_red_dark   */
+    --on-primary:#FFFFFF;
+    --surface:#FEF7FF;
+    --on-surface:#1D1B20;
+    --on-surface-variant:#49454F;
+    --outline:#7A757F;
+    --tonal:#E8E2E6;            /* stand-in for a neutral filled/tonal button */
+    --card-stroke:#CAC4D0;
+    --bg:#14131A;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;padding:40px 24px 56px;
+    background:radial-gradient(1200px 600px at 50% -10%,#241f2e 0%,var(--bg) 60%);
+    font-family:Roboto,"Helvetica Neue",Arial,system-ui,sans-serif;
+    color:#EDE8F0;
+  }
+  h1{font-size:19px;font-weight:600;letter-spacing:.2px;margin:0 0 4px;text-align:center}
+  .sub{font-size:13px;color:#A9A2B6;text-align:center;margin:0 0 34px}
+  .row{display:flex;flex-wrap:wrap;gap:34px;justify-content:center;align-items:flex-start}
+  .col{display:flex;flex-direction:column;align-items:center;gap:12px}
+  .caption{font-size:12.5px;color:#BDB6C9;letter-spacing:.3px}
+
+  /* ---- phone frame ---- */
+  .phone{
+    width:352px;height:672px;border-radius:34px;
+    background:var(--surface);color:var(--on-surface);
+    border:9px solid #0b0a0f;
+    box-shadow:0 22px 50px rgba(0,0,0,.55), 0 0 0 1px #2c2836 inset;
+    overflow:hidden;display:flex;flex-direction:column;position:relative;
+  }
+  .status-bar{
+    height:26px;flex:0 0 26px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;font-size:10.5px;color:var(--on-surface-variant);
+    background:var(--surface);
+  }
+
+  /* ---- app top bar ---- */
+  .topbar{flex:0 0 auto;padding:6px 16px 8px;background:var(--surface)}
+  .topbar .line1{display:flex;align-items:center;gap:8px}
+  .apptitle{flex:1;font-size:20px;font-weight:600;letter-spacing:.1px}
+  .btn{
+    display:inline-flex;align-items:center;gap:6px;justify-content:center;
+    font-size:13px;font-weight:600;letter-spacing:.3px;
+    border-radius:20px;padding:9px 16px;border:0;white-space:nowrap;
+  }
+  .btn.tonal{background:var(--tonal);color:var(--on-surface)}
+  .btn.filled{background:var(--primary);color:var(--on-primary)}
+  .btn.outlined{background:transparent;color:var(--primary);border:1px solid var(--outline)}
+  .btn svg{display:block}
+  .status{font-size:11.5px;color:var(--on-surface-variant);margin-top:4px}
+
+  /* ---- fragment area ---- */
+  .content{
+    flex:1 1 auto;min-height:0;padding:16px;display:flex;flex-direction:column;gap:6px;
+    overflow:hidden;
+  }
+  .content.scroll{overflow-y:auto}
+
+  /* live tab */
+  .pickerrow{display:flex;align-items:center;gap:8px}
+  .spinner{
+    flex:1;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--outline);padding:7px 2px;font-size:14px;
+  }
+  .sw{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--on-surface)}
+  .track{width:40px;height:22px;border-radius:12px;background:var(--primary);position:relative;flex:0 0 auto}
+  .track:after{content:"";position:absolute;top:2px;left:20px;width:18px;height:18px;border-radius:50%;background:#fff}
+  .bigval{font-size:38px;font-weight:400;color:var(--primary);line-height:1.05;letter-spacing:-.5px}
+  .bigunit{font-size:16px;font-weight:500;color:var(--on-surface-variant);margin-left:8px;padding-bottom:6px}
+  .bigrow{display:flex;align-items:flex-end;padding:2px 0 4px}
+  .chartwrap{flex:0 0 auto;height:196px;position:relative}
+  .emptytxt{text-align:center;font-size:13px;color:var(--on-surface-variant);padding:6px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:2px}
+  .pidcard{
+    border:1px solid var(--card-stroke);border-radius:12px;padding:10px 12px;background:var(--surface);
+  }
+  .pidlabel{font-size:11px;font-weight:500;letter-spacing:.4px;color:var(--on-surface-variant);text-transform:uppercase}
+  .pidval{font-size:16px;font-weight:600;margin-top:3px}
+
+  /* codes tab */
+  .btnrow{display:flex;gap:8px}
+  .btnrow .btn{flex:1;padding:10px 8px}
+  .statline{display:flex;align-items:center;gap:8px;padding:8px 0;font-size:13.5px;color:var(--on-surface)}
+  .spinnerring{width:18px;height:18px;border-radius:50%;border:2.5px solid #DAD3DE;border-top-color:var(--primary)}
+  .codes{flex:1;overflow:hidden}
+  .codeitem{padding:10px 0}
+  .codeid{font-size:16px;font-weight:600;color:var(--primary)}
+  .codedesc{font-size:13.5px;color:var(--on-surface-variant);margin-top:2px}
+
+  /* vehicle tab */
+  .vcard{border:1px solid var(--card-stroke);border-radius:12px;padding:16px;background:var(--surface)}
+  .vcard h3{margin:0;font-size:15px;font-weight:600;color:var(--primary)}
+  .vcard p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--on-surface)}
+  .sectrow{display:flex;align-items:center;gap:8px;padding:12px 0 4px}
+  .sectrow .t{flex:1;font-size:15px;font-weight:600}
+  .kv{display:flex;padding:8px 0;font-size:13.5px;border-bottom:1px solid #EFE9F2}
+  .kv .k{flex:2;color:var(--on-surface-variant)}
+  .kv .v{flex:3;color:var(--on-surface)}
+
+  /* bottom nav */
+  .bottomnav{
+    flex:0 0 74px;display:flex;align-items:center;justify-content:space-around;
+    background:#F3EDF7;padding-bottom:8px;
+  }
+  .navitem{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--on-surface-variant);width:33%}
+  .navitem .pill{width:58px;height:30px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+  .navitem.active{color:var(--on-surface)}
+  .navitem.active .pill{background:#F5D9DE}
+  .navitem .lbl{font-size:11.5px;font-weight:500}
+
+  .notes{max-width:900px;margin:44px auto 0;font-size:13px;line-height:1.7;color:#B9B2C6}
+  .notes h2{font-size:14px;color:#E7E1EF;margin:0 0 8px;font-weight:600}
+  .notes ul{margin:0;padding-left:20px}
+  .notes code{background:#241f2e;padding:1px 5px;border-radius:4px;color:#E4C9D0;font-size:12px}
+</style>
+</head>
+<body>
+
+<h1>Mazda OBD — main tabs</h1>
+<p class="sub">Static mockup of the three bottom-nav destinations, rendered from the current layouts &amp; theme</p>
+
+<div class="row">
+
+  <!-- ============ TAB 1 : LIVE DATA ============ -->
+  <div class="col">
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><span>▮▮▮ ⌁ ▰</span></div>
+
+      <div class="topbar">
+        <div class="line1">
+          <div class="apptitle">Mazda OBD</div>
+          <button class="btn tonal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l5.5 5.5-1.4 1.4L13 5.8V16h-2V5.8L7.9 8.9 6.5 7.5 12 2zM6 18h12v2H6z"/></svg>
+            Connect
+          </button>
+        </div>
+        <div class="status">ELM327 v1.5 • ISO 15765-4 CAN (11-bit, 500 kbaud)</div>
+      </div>
+
+      <div class="content">
+        <div class="pickerrow">
+          <div class="spinner"><span>Engine RPM</span><span style="color:#7A757F">▾</span></div>
+          <div class="sw"><span class="track"></span> Record</div>
+        </div>
+
+        <div class="bigrow">
+          <span class="bigval">2 384</span><span class="bigunit">rpm</span>
+        </div>
+
+        <div class="chartwrap">
+          <svg width="100%" height="196" viewBox="0 0 320 196" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#A6192E" stop-opacity=".26"/>
+                <stop offset="100%" stop-color="#A6192E" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- gridlines -->
+            <g stroke="#E7E1EA" stroke-width="1">
+              <line x1="0" y1="30"  x2="320" y2="30"/>
+              <line x1="0" y1="70"  x2="320" y2="70"/>
+              <line x1="0" y1="110" x2="320" y2="110"/>
+              <line x1="0" y1="150" x2="320" y2="150"/>
+            </g>
+            <path fill="url(#fill)" stroke="none"
+              d="M0,150 L20,132 L40,141 L60,104 L80,120 L100,86 L120,98 L140,72 L160,90 L180,66 L200,84 L220,58 L240,76 L260,96 L280,110 L300,124 L320,140 L320,196 L0,196 Z"/>
+            <polyline fill="none" stroke="#A6192E" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"
+              points="0,150 20,132 40,141 60,104 80,120 100,86 120,98 140,72 160,90 180,66 200,84 220,58 240,76 260,96 280,110 300,124 320,140"/>
+            <circle cx="220" cy="58" r="3.6" fill="#A6192E"/>
+          </svg>
+        </div>
+
+        <div class="emptytxt"></div>
+
+        <div class="grid">
+          <div class="pidcard"><div class="pidlabel">Speed</div><div class="pidval">64 km/h</div></div>
+          <div class="pidcard"><div class="pidlabel">Coolant</div><div class="pidval">89 °C</div></div>
+          <div class="pidcard"><div class="pidlabel">Throttle</div><div class="pidval">18.4 %</div></div>
+          <div class="pidcard"><div class="pidlabel">Intake air</div><div class="pidval">31 °C</div></div>
+        </div>
+      </div>
+
+      <div class="bottomnav">
+        <div class="navitem active">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 019 9 8.96 8.96 0 01-1.6 5.12l-1.5-1.5A6.96 6.96 0 0019 12a7 7 0 10-11.9 5l-1.5 1.5A8.96 8.96 0 013 12a9 9 0 019-9zm1 3v4.6l3.2 3.2-1.4 1.4L11 11.4V6h2z"/></svg></div>
+          <div class="lbl">Live data</div>
+        </div>
+        <div class="navitem">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>
+          <div class="lbl">Codes</div>
+        </div>
+        <div class="navitem">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 6.5c-.2-.6-.8-1-1.4-1H6.5c-.7 0-1.2.4-1.4 1L4 12v8h2.5v-2h11v2H20v-8l-1.1-5.5zM6.8 7.5h10.4l.7 3.5H6.1l.7-3.5zM7 15c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm10 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/></svg></div>
+          <div class="lbl">Vehicle</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Tab 1 — Live data</div>
+  </div>
+
+  <!-- ============ TAB 2 : CODES ============ -->
+  <div class="col">
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><span>▮▮▮ ⌁ ▰</span></div>
+
+      <div class="topbar">
+        <div class="line1">
+          <div class="apptitle">Mazda OBD</div>
+          <button class="btn tonal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l5.5 5.5-1.4 1.4L13 5.8V16h-2V5.8L7.9 8.9 6.5 7.5 12 2zM6 18h12v2H6z"/></svg>
+            Disconnect
+          </button>
+        </div>
+        <div class="status">ELM327 v1.5 • ISO 15765-4 CAN (11-bit, 500 kbaud)</div>
+      </div>
+
+      <div class="content">
+        <div class="btnrow">
+          <button class="btn filled">Read stored</button>
+          <button class="btn tonal">Read pending</button>
+        </div>
+        <div class="btnrow">
+          <button class="btn tonal">Freeze frame</button>
+          <button class="btn tonal">Monitor tests</button>
+        </div>
+        <button class="btn outlined" style="width:100%">Clear codes / reset MIL</button>
+
+        <div class="statline">
+          <span style="font-size:13.5px">2 stored code(s)</span>
+        </div>
+
+        <div class="codes">
+          <div class="codeitem">
+            <div class="codeid">P0300</div>
+            <div class="codedesc">Random / multiple cylinder misfire detected</div>
+          </div>
+          <div class="codeitem">
+            <div class="codeid">P0455</div>
+            <div class="codedesc">Evaporative emission system leak detected (gross leak)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottomnav">
+        <div class="navitem">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 019 9 8.96 8.96 0 01-1.6 5.12l-1.5-1.5A6.96 6.96 0 0019 12a7 7 0 10-11.9 5l-1.5 1.5A8.96 8.96 0 013 12a9 9 0 019-9zm1 3v4.6l3.2 3.2-1.4 1.4L11 11.4V6h2z"/></svg></div>
+          <div class="lbl">Live data</div>
+        </div>
+        <div class="navitem active">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>
+          <div class="lbl">Codes</div>
+        </div>
+        <div class="navitem">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 6.5c-.2-.6-.8-1-1.4-1H6.5c-.7 0-1.2.4-1.4 1L4 12v8h2.5v-2h11v2H20v-8l-1.1-5.5zM6.8 7.5h10.4l.7 3.5H6.1l.7-3.5zM7 15c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm10 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/></svg></div>
+          <div class="lbl">Vehicle</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Tab 2 — Codes (DTC + freeze frame + Mode 06)</div>
+  </div>
+
+  <!-- ============ TAB 3 : VEHICLE ============ -->
+  <div class="col">
+    <div class="phone">
+      <div class="status-bar"><span>9:41</span><span>▮▮▮ ⌁ ▰</span></div>
+
+      <div class="topbar">
+        <div class="line1">
+          <div class="apptitle">Mazda OBD</div>
+          <button class="btn tonal">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l5.5 5.5-1.4 1.4L13 5.8V16h-2V5.8L7.9 8.9 6.5 7.5 12 2zM6 18h12v2H6z"/></svg>
+            Disconnect
+          </button>
+        </div>
+        <div class="status">ELM327 v1.5 • ISO 15765-4 CAN (11-bit, 500 kbaud)</div>
+      </div>
+
+      <div class="content scroll">
+        <div class="vcard">
+          <h3>Mazda 3 (BL) • 2010</h3>
+          <p>Expected OBD protocol: ISO 15765-4 CAN (11-bit, 500 kbaud) — the app auto-detects via ATSP0.</p>
+          <p>Engines: 2.0 MZR LF-VE / 2.5 MZR L5-VE (Mazdaspeed3: 2.3 DISI Turbo L3-VDT).</p>
+          <p>OBD-II port: driver side, under the dash near the hood release.</p>
+        </div>
+
+        <div class="sectrow">
+          <span class="t">Read from vehicle</span>
+          <button class="btn tonal">Refresh</button>
+        </div>
+
+        <div class="kv"><span class="k">VIN</span><span class="v">JM1BL1H58A1234567</span></div>
+        <div class="kv"><span class="k">Protocol</span><span class="v">ISO 15765-4 CAN (11-bit, 500 kbaud)</span></div>
+        <div class="kv"><span class="k">Protocol number (ELM)</span><span class="v">6</span></div>
+        <div class="kv"><span class="k">Adapter voltage</span><span class="v">12.4 V</span></div>
+        <div class="kv"><span class="k">Stored DTC count</span><span class="v">2</span></div>
+        <div class="kv"><span class="k">MIL (check engine)</span><span class="v">ON</span></div>
+        <div class="kv"><span class="k">ECU hardware number</span><span class="v">LFBL-18881 • LFBL-188K2</span></div>
+        <div class="kv"><span class="k">Calibration ID</span><span class="v">LFBL-18881-… • LFBL-188K2-…</span></div>
+      </div>
+
+      <div class="bottomnav">
+        <div class="navitem">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 019 9 8.96 8.96 0 01-1.6 5.12l-1.5-1.5A6.96 6.96 0 0019 12a7 7 0 10-11.9 5l-1.5 1.5A8.96 8.96 0 013 12a9 9 0 019-9zm1 3v4.6l3.2 3.2-1.4 1.4L11 11.4V6h2z"/></svg></div>
+          <div class="lbl">Live data</div>
+        </div>
+        <div class="navitem">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></div>
+          <div class="lbl">Codes</div>
+        </div>
+        <div class="navitem active">
+          <div class="pill"><svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 6.5c-.2-.6-.8-1-1.4-1H6.5c-.7 0-1.2.4-1.4 1L4 12v8h2.5v-2h11v2H20v-8l-1.1-5.5zM6.8 7.5h10.4l.7 3.5H6.1l.7-3.5zM7 15c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm10 0c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1z"/></svg></div>
+          <div class="lbl">Vehicle</div>
+        </div>
+      </div>
+    </div>
+    <div class="caption">Tab 3 — Vehicle info</div>
+  </div>
+
+</div>
+
+<div class="notes">
+  <h2>Notes on this mockup</h2>
+  <ul>
+    <li>Faithful to the current layouts: shared top bar (title + Connect/Disconnect tonal button + status line), fragment area, and the 3-item bottom nav. Values are illustrative, not real readings.</li>
+    <li><b>Tab 1</b> — PID spinner + <code>Record</code> switch, big value in <code>colorPrimary</code>, MPAndroidChart line chart, then a 2-column grid of PID cards.</li>
+    <li><b>Tab 2</b> — exactly the button set now in the DTC tab: Read stored / Read pending, <b>Freeze frame</b> / <b>Monitor tests</b>, then the outlined Clear. Code list uses the <code>item_dtc</code> style.</li>
+    <li><b>Tab 3</b> — fixed vehicle card, "Read from vehicle" + Refresh, then key/value rows. The last two rows (<b>ECU hardware number</b>, <b>Calibration ID</b>) are the just-added Mode 09 fields, shown as two ECUs joined with <code>•</code>.</li>
+    <li><b>Colour caveat:</b> the theme only overrides <code>colorPrimary</code>/<code>colorSecondary</code> to Soul Red, so tonal buttons really use Material 3's default <code>secondaryContainer</code> (a baseline tint), not a red-derived one. Shown here as a neutral grey. If you want the tones to match the brand, add <code>colorPrimaryContainer</code>/<code>colorSecondaryContainer</code> overrides to <code>themes.xml</code>.</li>
+  </ul>
+</div>
+
+</body>
+</html>
