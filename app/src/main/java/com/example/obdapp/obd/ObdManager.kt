@@ -129,6 +129,16 @@ class ObdManager(inputStream: InputStream, outputStream: OutputStream) {
         }
         tryPut("Stored DTC count") { connection.run(DTCNumberCommand()).value }
         tryPut("MIL (check engine)") { connection.run(MILOnCommand()).value }
+        // Mode 09 ASCII identification fields. Multiple ECUs (PCM, TCM, …) can
+        // each respond; their values are joined with " • ".
+        tryPut("ECU hardware number") {
+            val bytes = connection.run(Mode09AsciiCommand("09")).rawResponse.bufferedValue
+            parseMode09Ascii(bytes, pidByte = 0x09).joinToString(" • ")
+        }
+        tryPut("Calibration ID") {
+            val bytes = connection.run(Mode09AsciiCommand("04")).rawResponse.bufferedValue
+            parseMode09Ascii(bytes, pidByte = 0x04).joinToString(" • ")
+        }
         return info
     }
 
@@ -268,6 +278,14 @@ class ObdManager(inputStream: InputStream, outputStream: OutputStream) {
         override val pid = "%02X".format(mid)
     }
 
+    /** Mode 09 PID that returns ASCII data (e.g. 04 calibration ID, 09 hardware number). */
+    private class Mode09AsciiCommand(pid: String) : ObdCommand() {
+        override val tag = "MODE09_PID_$pid"
+        override val name = "Mode 09 PID $pid"
+        override val mode = "09"
+        override val pid = pid
+    }
+
     private companion object {
         /** (Mode 02 PID, byte length) pairs, ordered for display. */
         val FREEZE_FRAME_PIDS = listOf(
@@ -296,4 +314,30 @@ private fun encodeDtc(b0: Int, b1: Int): String {
     val d1 = (b0 shr 4) and 0x3
     val rest = "%X%X%X".format(b0 and 0xF, (b1 shr 4) and 0xF, b1 and 0xF)
     return "$letter$d1$rest"
+}
+
+/**
+ * Splits a Mode 09 ASCII response into one string per ECU.
+ *
+ * On CAN (ISO 15765) with headers off, each answering ECU appends its own
+ * `49 <PID> <len> <ASCII bytes>` block. We walk the byte stream, splitting on
+ * the `49 <pidByte>` marker and reading the length byte that follows.
+ */
+private fun parseMode09Ascii(bytes: IntArray, pidByte: Int): List<String> {
+    val out = ArrayList<String>()
+    var i = 0
+    while (i + 2 < bytes.size) {
+        if (bytes[i] != 0x49 || bytes[i + 1] != pidByte) break
+        val len = bytes[i + 2]
+        i += 3
+        val end = minOf(i + len, bytes.size)
+        val ascii = bytes.copyOfRange(i, end)
+            .map { it.toChar() }
+            .joinToString("")
+            .filter { it in ' '..'~' }
+            .trim()
+        if (ascii.isNotEmpty()) out.add(ascii)
+        i += len
+    }
+    return out
 }
