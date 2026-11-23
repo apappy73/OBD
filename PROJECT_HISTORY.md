@@ -115,6 +115,17 @@ cheap **BLE ELM327** dongle over a GATT UART. Single user, no backend, no accoun
 
 ## 9. Change log
 
+- 2026-11-23 — **Theme: on-brand tonal colours** (`values/themes.xml`,
+  `values/colors.xml`, new `values-night/colors.xml`). The theme previously
+  overrode only `colorPrimary`/`colorSecondary`, so every tonal button and the
+  bottom-nav active indicator fell back to Material 3's baseline
+  `secondaryContainer` tint. Now `colorPrimaryContainer` /
+  `colorSecondaryContainer` (and their `on…` pairs) are set to Soul Red tints:
+  light `#FFDADB` on `#41000A`, dark `#93000F` on `#FFDADB`.
+  Open question: `colorPrimary` stays `#A6192E` in dark mode, which is
+  low-contrast for primary-coloured text on dark surfaces (e.g. the big value
+  on the Live tab) — not addressed.
+
 - 2026-11-23 — **Vehicle Info: ECU hardware number + calibration ID**
   (`obd/ObdManager.kt`). `readVehicleInfo()` now also fetches Mode 09 PID 09
   (ECU Hardware Number) and PID 04 (Calibration ID). A new `parseMode09Ascii()`

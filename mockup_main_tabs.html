@@ -14,7 +14,8 @@
     --on-surface:#1D1B20;
     --on-surface-variant:#49454F;
     --outline:#7A757F;
-    --tonal:#E8E2E6;            /* stand-in for a neutral filled/tonal button */
+    --tonal:#FFDADB;            /* colorSecondaryContainer = soul_red_container */
+    --on-tonal:#41000A;         /* colorOnSecondaryContainer                    */
     --card-stroke:#CAC4D0;
     --bg:#14131A;
   }
@@ -54,7 +55,7 @@
     font-size:13px;font-weight:600;letter-spacing:.3px;
     border-radius:20px;padding:9px 16px;border:0;white-space:nowrap;
   }
-  .btn.tonal{background:var(--tonal);color:var(--on-surface)}
+  .btn.tonal{background:var(--tonal);color:var(--on-tonal)}
   .btn.filled{background:var(--primary);color:var(--on-primary)}
   .btn.outlined{background:transparent;color:var(--primary);border:1px solid var(--outline)}
   .btn svg{display:block}
@@ -116,7 +117,7 @@
   .navitem{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--on-surface-variant);width:33%}
   .navitem .pill{width:58px;height:30px;border-radius:16px;display:flex;align-items:center;justify-content:center}
   .navitem.active{color:var(--on-surface)}
-  .navitem.active .pill{background:#F5D9DE}
+  .navitem.active .pill{background:var(--tonal);color:var(--on-tonal)}
   .navitem .lbl{font-size:11.5px;font-weight:500}
 
   .notes{max-width:900px;margin:44px auto 0;font-size:13px;line-height:1.7;color:#B9B2C6}
@@ -336,7 +337,8 @@
     <li><b>Tab 1</b> — PID spinner + <code>Record</code> switch, big value in <code>colorPrimary</code>, MPAndroidChart line chart, then a 2-column grid of PID cards.</li>
     <li><b>Tab 2</b> — exactly the button set now in the DTC tab: Read stored / Read pending, <b>Freeze frame</b> / <b>Monitor tests</b>, then the outlined Clear. Code list uses the <code>item_dtc</code> style.</li>
     <li><b>Tab 3</b> — fixed vehicle card, "Read from vehicle" + Refresh, then key/value rows. The last two rows (<b>ECU hardware number</b>, <b>Calibration ID</b>) are the just-added Mode 09 fields, shown as two ECUs joined with <code>•</code>.</li>
-    <li><b>Colour caveat:</b> the theme only overrides <code>colorPrimary</code>/<code>colorSecondary</code> to Soul Red, so tonal buttons really use Material 3's default <code>secondaryContainer</code> (a baseline tint), not a red-derived one. Shown here as a neutral grey. If you want the tones to match the brand, add <code>colorPrimaryContainer</code>/<code>colorSecondaryContainer</code> overrides to <code>themes.xml</code>.</li>
+    <li><b>Colour:</b> the theme now overrides <code>colorPrimaryContainer</code> / <code>colorSecondaryContainer</code> (light <code>#FFDADB</code>, dark <code>#93000F</code>) so tonal buttons and the nav active pill use a Soul Red tint instead of Material's baseline. Shown here with the light-scheme tint.</li>
+    <li><b>Dark mode:</b> a <code>values-night/colors.xml</code> supplies dark-scheme variants. Note that <code>colorPrimary</code> itself is still the mid-dark <code>#A6192E</code> in dark mode — fine on a light surface, but low-contrast for primary-coloured <i>text</i> (e.g. the big value on Tab 1) on a dark surface. Turning that into a light tone for night is a separate decision.</li>
   </ul>
 </div>
 

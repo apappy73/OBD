@@ -5,4 +5,9 @@
     <color name="soul_red_dark">#7A1223</color>
     <color name="soul_red_light">#E86A7C</color>
     <color name="ic_launcher_background">#1C1B1F</color>
+
+    <!-- Soul Red tonal containers (light scheme). Driving both the primary and
+         secondary container roles keeps every tonal button / nav indicator on-brand. -->
+    <color name="soul_red_container">#FFDADB</color>
+    <color name="soul_red_on_container">#41000A</color>
 </resources>
